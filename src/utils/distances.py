@@ -69,7 +69,7 @@ def cosine(a: np.ndarray, b: np.ndarray):
     Return type: float | ndarray
     """
     dist = np.diag(np.dot(a, b.T))
-    norms = np.linalg.norm(a) * np.linalg.norm(b)
+    norms = np.linalg.norm(a, axis=-1) * np.linalg.norm(b, axis=-1)
 
     return dist / norms
 
