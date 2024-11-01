@@ -22,6 +22,7 @@ class SOM:
             topology_shape = [size for size in topology_shape]
             topology_shape.append(n_dim)
 
+        self.__alpha = 0.01
         self.__prototypes = np.zeros(topology_shape)
         self.__structure = {
             "distance": euclidean_squared,
@@ -30,6 +31,10 @@ class SOM:
 
     def attach(self, structure: Dict) -> None:
         for key in structure.keys():
+            if key == "alpha":
+                self.__alpha = structure[key]
+                continue
+
             if key not in self.__structure.keys():
                 raise UnknownStructureException(f"{key} are not a known SOM structural element.")
             
@@ -38,19 +43,44 @@ class SOM:
             
             self.__structure[key] = structure[key]
     
-    def bmu(self, data: np.ndarray, return_dists: bool = False) -> tuple:
-        if not isinstance(data, np.ndarray):
-            data = np.array(data)
+    def bmu(self, input: np.ndarray, return_dists: bool = False) -> tuple:
+        if not isinstance(input, np.ndarray):
+            input = np.array(input)
         
-        if data.ndim() > 1:
-            data = data.flatten()
+        if input.ndim() > 1:
+            input = input.flatten()
 
-        if data.shape[0] != self.__prototypes[-1]:
+        if input.shape[0] != self.__prototypes[-1]:
             raise WrongShapeException("The shape of given input is not accepted.")
         
-        dists = self.__structure["distance"](self.__prototypes, data)
+        dists = self.__structure["distance"](self.__prototypes, input)
 
         if return_dists:
             return np.argmin(dists), dists
     
         return np.argmin(dists)
+
+    def neighborhood(self, bmu: tuple) -> np.ndarray:
+        return self.__structure["neighborhood"](
+            self.__prototypes.shape,
+            bmu
+        )
+    
+    def update(self, input: np.ndarray) -> None:
+        if not isinstance(input, np.ndarray):
+            input = np.array(input)
+        
+        if input.ndim() > 1:
+            input = input.flatten()
+
+        if input.shape[0] != self.__prototypes[-1]:
+            raise WrongShapeException("The shape of given input is not accepted.")
+        
+        bmu = self.bmu(input)
+        neighborhood = self.neighborhood(bmu)
+
+        diff = self.__prototypes - input
+        diff = diff * neighborhood[:, :, np.newaxis]
+        diff = diff * self.__alpha
+
+        self.__prototypes = self.__prototypes - diff
