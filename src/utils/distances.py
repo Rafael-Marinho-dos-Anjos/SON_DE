@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def euclidean_squared(a: np.ndarray, b: np.ndarray):
+def euclidean_squared(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Euclidean distance squared
     
@@ -22,7 +22,7 @@ def euclidean_squared(a: np.ndarray, b: np.ndarray):
     return dist
 
 
-def euclidean(a: np.ndarray, b: np.ndarray):
+def euclidean(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Euclidean distance
     
@@ -39,7 +39,7 @@ def euclidean(a: np.ndarray, b: np.ndarray):
     return dist
 
 
-def manhattan(a: np.ndarray, b: np.ndarray):
+def manhattan(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Manhattan's distance
     
@@ -57,7 +57,7 @@ def manhattan(a: np.ndarray, b: np.ndarray):
     return dist
 
 
-def cosine(a: np.ndarray, b: np.ndarray):
+def cosine(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Cosine distance
     
