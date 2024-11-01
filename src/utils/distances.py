@@ -33,7 +33,7 @@ def euclidean(a: np.ndarray, b: np.ndarray) -> float:
     Return: The euclidean distance between a and b vectors
     Return type: float | ndarray
     """
-    dist = euclidean(a, b)
+    dist = euclidean_squared(a, b)
     dist = np.sqrt(dist)
 
     return dist
@@ -68,14 +68,20 @@ def cosine(a: np.ndarray, b: np.ndarray) -> float:
     Return: The cosine distance between a and b vectors
     Return type: float | ndarray
     """
-    dist = np.diag(np.dot(a, b.T))
+    dist = np.dot(a, b)
     norms = np.linalg.norm(a, axis=-1) * np.linalg.norm(b, axis=-1)
 
-    return dist / norms
+    return 1 - dist / norms
 
 
 if __name__ == "__main__":
-    a = np.array([[1, 2, 3], [2, 3, 4]])
-    b = np.array([[1, 2, 3], [2, 3, 4]])
+    a = np.array(
+        [
+            [[1, 2, 3], [2, 3, 4]],
+            [[1, 2, 3], [2, 3, 4]],
+            [[1, 2, 3], [2, 3, 4]]
+        ]
+    )
+    b = np.array([1, 2, 3])
 
-    print(cosine(a, b))
+    print(euclidean_squared(a, b))
