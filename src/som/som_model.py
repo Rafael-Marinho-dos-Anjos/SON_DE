@@ -84,3 +84,10 @@ class SOM:
         diff = diff * self.__alpha
 
         self.__prototypes = self.__prototypes - diff
+
+    def get_prototype(self, index: tuple) -> np.ndarray:
+        prototype = self.__prototypes.copy()
+        for i in range(len(index)):
+            prototype = prototype[i]
+
+        return prototype
