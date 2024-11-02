@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def euclidean_squared(a: np.ndarray, b: np.ndarray):
+def euclidean_squared(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Euclidean distance squared
     
@@ -22,7 +22,7 @@ def euclidean_squared(a: np.ndarray, b: np.ndarray):
     return dist
 
 
-def euclidean(a: np.ndarray, b: np.ndarray):
+def euclidean(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Euclidean distance
     
@@ -33,13 +33,13 @@ def euclidean(a: np.ndarray, b: np.ndarray):
     Return: The euclidean distance between a and b vectors
     Return type: float | ndarray
     """
-    dist = euclidean(a, b)
+    dist = euclidean_squared(a, b)
     dist = np.sqrt(dist)
 
     return dist
 
 
-def manhattan(a: np.ndarray, b: np.ndarray):
+def manhattan(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Manhattan's distance
     
@@ -57,7 +57,7 @@ def manhattan(a: np.ndarray, b: np.ndarray):
     return dist
 
 
-def cosine(a: np.ndarray, b: np.ndarray):
+def cosine(a: np.ndarray, b: np.ndarray) -> float:
     """ 
     Cosine distance
     
@@ -68,14 +68,20 @@ def cosine(a: np.ndarray, b: np.ndarray):
     Return: The cosine distance between a and b vectors
     Return type: float | ndarray
     """
-    dist = np.diag(np.dot(a, b.T))
+    dist = np.dot(a, b)
     norms = np.linalg.norm(a, axis=-1) * np.linalg.norm(b, axis=-1)
 
-    return dist / norms
+    return 1 - dist / norms
 
 
 if __name__ == "__main__":
-    a = np.array([[1, 2, 3], [2, 3, 4]])
-    b = np.array([[1, 2, 3], [2, 3, 4]])
+    a = np.array(
+        [
+            [[1, 2, 3], [2, 3, 4]],
+            [[1, 2, 3], [2, 3, 4]],
+            [[1, 2, 3], [2, 3, 4]]
+        ]
+    )
+    b = np.array([1, 2, 3])
 
-    print(cosine(a, b))
+    print(euclidean_squared(a, b))
