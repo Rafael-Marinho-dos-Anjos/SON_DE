@@ -56,9 +56,9 @@ class DE:
         self.__calc_fitness()
 
         if self.__is_maximization:
-            return np.max(self.__fitness)
+            return np.argmax(self.__fitness)
         else:
-            return np.min(self.__fitness)
+            return np.argmin(self.__fitness)
     
     def new_generation(self):
         for i in range(self.__population.shape[0]):
@@ -71,6 +71,11 @@ class DE:
             trial = self.__structure["crossing"](self.__population[i], v)
             trial_fit = self.__structure["fitness"](trial)
 
-            if trial_fit >= self.__fitness[i]:
-                self.__population[i] = trial
-                self.__fitness[i] = trial_fit
+            if self.__is_maximization:
+                if trial_fit >= self.__fitness[i]:
+                    self.__population[i] = trial
+                    self.__fitness[i] = trial_fit
+            else:
+                if trial_fit <= self.__fitness[i]:
+                    self.__population[i] = trial
+                    self.__fitness[i] = trial_fit
