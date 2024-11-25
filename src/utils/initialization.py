@@ -95,4 +95,4 @@ if __name__ == "__main__":
         ]
     )
 
-    print(lhs((2, 5, 4)))
+    print(random((2, 5, 4)))

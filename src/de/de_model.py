@@ -9,13 +9,14 @@ from src.utils.exceptions import *
 
 class DE:
     def __init__(self, dim: int, NP: int, init_method: Any = None, is_maximization: bool = False):
-        self.__population = np.zeros((NP, dim))
         self.__fitness = np.zeros(NP)
         self.__have_fit = np.zeros(NP).astype(np.bool)
         self.__is_maximization = is_maximization
         
         if init_method:
-            self.__population = init_method(self.__population)
+            self.__population = init_method((NP, dim))
+        else:
+            self.__population = np.zeros((NP, dim))
 
         self.__structure = {
             "mutation": None,

@@ -83,5 +83,5 @@ def retangular(sigma: float) -> Any:
 
 
 if __name__ == "__main__":
-    print(np.round(100*gaussian(0.75)([3, 3], [2, 0]))/100)
+    print(np.round(100*gaussian(1)([3, 3], [2, 0]))/100)
     
