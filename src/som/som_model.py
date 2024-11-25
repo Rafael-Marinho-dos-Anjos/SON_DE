@@ -2,7 +2,7 @@
 """
 
 import numpy as np
-from typing import Dict
+from typing import Dict, Any
 
 from src.utils.distances import *
 from src.utils.neighborhood import *
@@ -13,7 +13,8 @@ class SOM:
     def __init__(
             self,
             n_dim: int,
-            topology_shape: tuple
+            topology_shape: tuple,
+            init_method: Any
     ):
         if isinstance(topology_shape, int):
             topology_shape = (topology_shape)
@@ -23,7 +24,12 @@ class SOM:
             topology_shape.append(n_dim)
 
         self.__alpha = 0.01
-        self.__prototypes = np.zeros(topology_shape)
+
+        if init_method:
+            self.__prototypes = init_method(topology_shape)
+        else:
+            self.__prototypes = np.zeros(topology_shape)
+
         self.__structure = {
             "distance": euclidean_squared,
             "neighborhood": gaussian(sigma=1)
@@ -36,7 +42,7 @@ class SOM:
                 continue
 
             if key not in self.__structure.keys():
-                raise UnknownStructureException(f"{key} are not a known SOM structural element.")
+                raise UnknownStructureException(f"{key} are not a known SOM operator.")
             
             if not callable(structure[key]):
                 raise NotCallableElementException(f"{key} is not a callable element.")
@@ -47,10 +53,10 @@ class SOM:
         if not isinstance(input, np.ndarray):
             input = np.array(input)
         
-        if input.ndim() > 1:
+        if input.ndim > 1:
             input = input.flatten()
 
-        if input.shape[0] != self.__prototypes[-1]:
+        if input.shape[0] != self.__prototypes.shape[-1]:
             raise WrongShapeException("The shape of given input is not accepted.")
         
         dists = self.__structure["distance"](self.__prototypes, input)
@@ -70,17 +76,18 @@ class SOM:
         if not isinstance(input, np.ndarray):
             input = np.array(input)
         
-        if input.ndim() > 1:
+        if input.ndim > 1:
             input = input.flatten()
 
-        if input.shape[0] != self.__prototypes[-1]:
+        if input.shape[0] != self.__prototypes.shape[-1]:
             raise WrongShapeException("The shape of given input is not accepted.")
         
         bmu = self.bmu(input)
+        bmu = np.unravel_index(bmu, self.__prototypes.shape[:-1])
         neighborhood = self.neighborhood(bmu)
 
         diff = self.__prototypes - input
-        diff = diff * neighborhood[:, :, np.newaxis]
+        diff = diff * neighborhood
         diff = diff * self.__alpha
 
         self.__prototypes = self.__prototypes - diff
