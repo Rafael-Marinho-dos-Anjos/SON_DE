@@ -36,7 +36,7 @@ class SOM:
                 continue
 
             if key not in self.__structure.keys():
-                raise UnknownStructureException(f"{key} are not a known SOM structural element.")
+                raise UnknownStructureException(f"{key} are not a known SOM operator.")
             
             if not callable(structure[key]):
                 raise NotCallableElementException(f"{key} is not a callable element.")

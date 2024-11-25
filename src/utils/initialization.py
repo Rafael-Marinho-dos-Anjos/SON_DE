@@ -26,7 +26,7 @@ def gaussian(pop_shape: tuple, sdt_dev: tuple):
 
     return population
 
-def random(pop_shape: tuple, limits: tuple):
+def random(pop_shape: tuple, limits: tuple = None):
     """
     Random distribution.
     
@@ -37,6 +37,9 @@ def random(pop_shape: tuple, limits: tuple):
     Return:
         np.ndarray.
     """
+    if limits is None:
+        limits = np.array([[0, 1]])
+
     if not isinstance(limits, np.ndarray):
         limits = np.array(limits, dtype=np.float32)
     
@@ -46,7 +49,7 @@ def random(pop_shape: tuple, limits: tuple):
 
     return population
 
-def lhs(pop_shape: tuple, limits: tuple):
+def lhs(pop_shape: tuple, limits: tuple = None):
     """
     Latin Hypercube Sampling (LHS).
     
@@ -57,6 +60,9 @@ def lhs(pop_shape: tuple, limits: tuple):
     Return:
         np.ndarray.
     """
+    if limits is None:
+        limits = np.array([[0, 1]])
+
     if not isinstance(limits, np.ndarray):
         limits = np.array(limits, dtype=np.float32)
     
@@ -89,4 +95,4 @@ if __name__ == "__main__":
         ]
     )
 
-    print(lhs((2, 5, 4), lim))
+    print(lhs((2, 5, 4)))
