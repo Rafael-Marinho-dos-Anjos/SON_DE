@@ -5,7 +5,7 @@ import numpy as np
 
 
 def binary(CR: float):
-    def __crossing(a: np.ndarray, b: np.ndarray):
+    def __crossing(a: np.ndarray, b: np.ndarray, **kwargs):
         j = np.random.randint(0, len(a))
         trial = np.zeros(len(a))
 
