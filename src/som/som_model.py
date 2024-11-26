@@ -98,3 +98,6 @@ class SOM:
             prototype = prototype[i]
 
         return prototype
+
+    def get_prototypes(self) -> np.ndarray:
+        return self.__prototypes.copy()

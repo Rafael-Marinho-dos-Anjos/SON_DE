@@ -60,15 +60,17 @@ class DE:
         else:
             return np.argmin(self.__fitness)
     
-    def new_generation(self):
+    def new_generation(self, **kwargs):
         for i in range(self.__population.shape[0]):
+            kwargs["index"] = i
             v = self.__structure["mutation"](
                 self.__population,
                 self.best_individual_index(),
-                i
+                i,
+                **kwargs
             )
         
-            trial = self.__structure["crossing"](self.__population[i], v)
+            trial = self.__structure["crossing"](self.__population[i], v, **kwargs)
             trial_fit = self.__structure["fitness"](trial)
 
             if self.__is_maximization:
@@ -76,6 +78,6 @@ class DE:
                     self.__population[i] = trial
                     self.__fitness[i] = trial_fit
             else:
-                if trial_fit <= self.__fitness[i]:
+                if trial_fit < self.__fitness[i]:
                     self.__population[i] = trial
                     self.__fitness[i] = trial_fit
