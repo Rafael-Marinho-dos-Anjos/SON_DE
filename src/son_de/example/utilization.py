@@ -11,7 +11,7 @@ from src.utils.crossing import binary
 def fitness(input):
     return np.abs(np.sum(input ** 2) - 9)
 
-# DE com 20 induvíduos
+# SON-DE com 64 induvíduos
 son_de = SON_DE(
     dim=3,
     NP=64,
