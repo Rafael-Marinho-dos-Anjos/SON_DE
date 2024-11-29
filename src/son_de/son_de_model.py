@@ -88,6 +88,12 @@ class SON_DE:
             }
         )
     
+    def attach_de(self, structure):
+        self.__de.attach(structure)
+    
+    def attach_som(self, structure):
+        self.__som.attach(structure)
+    
     def get_pop_fitness(self):
         return self.__de.get_pop_fitness()
     
