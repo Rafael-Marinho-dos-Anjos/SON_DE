@@ -26,14 +26,19 @@ class SOM:
         self.__alpha = 0.01
 
         if init_method:
-            self.__prototypes = init_method(topology_shape)
+            self.__init_method = lambda: init_method(topology_shape)
         else:
-            self.__prototypes = np.zeros(topology_shape)
+            self.__init_method = lambda: np.zeros(topology_shape)
+
+        self.__prototypes = self.__init_method()
 
         self.__structure = {
             "distance": euclidean_squared,
             "neighborhood": gaussian(sigma=1)
         }
+
+    def reset_prototypes(self):
+        self.__prototypes = self.__init_method()
 
     def attach(self, structure: Dict) -> None:
         for key in structure.keys():

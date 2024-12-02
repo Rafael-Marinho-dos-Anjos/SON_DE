@@ -11,7 +11,7 @@ from src.son_de.operators import *
 from src.utils.distances import cosine
 from src.utils.mutation import son_de_rand_1
 from src.utils.crossing import binary
-from src.utils.neighborhood import gaussian
+from src.utils.neighborhood import gaussian, exponential
 
 
 class SON_DE:
@@ -22,11 +22,18 @@ class SON_DE:
         fitness_func: Any,
         topology_shape: tuple,
         init_method: Any = None,
-        is_maximization: bool = False
+        is_maximization: bool = False,
+        reset_prototypes: bool = False,
+        adjust = None,
+        sigma0 = None,
+        tau0 = None,
+        neig_func = None,
     ):
         self.__de = DE(dim, NP, init_method, is_maximization)
         self.__som = SOM(dim, topology_shape, init_method)
         self.__is_maximization = is_maximization
+        self.__NP=NP
+        self.__reset_prototypes = reset_prototypes
 
         self.__de.attach(
             {
@@ -47,12 +54,25 @@ class SON_DE:
             "relationship_building": relationship_building,
             "neighborhood_size": neighborhood_size,
             "locating": locating,
-            "grouping": grouping
+            "grouping": grouping,
+            "adjust": adjust,
+            "sigma0": sigma0,
+            "tau0": tau0
         }
     
-    def new_gen(self, som_epochs: int, delta: float, limits: tuple = (3, 10)) -> None:
+    def new_gen(self, som_epochs: int, delta: float, limits: tuple = (3, 10), **kwargs) -> None:
         for epoch in range(som_epochs):
-            for x in self.__de.get_population():
+            for i, x in enumerate(self.__de.get_population()):
+                if self.__operators["adjust"]:
+                    sigma = self.__operators["sigma0"] * self.__operators["adjust"](i=i, t=epoch, T=som_epochs, NP=self.__NP)
+                    tau = self.__operators["tau0"] * self.__operators["adjust"](i=i, t=epoch, T=som_epochs, NP=self.__NP)
+                    self.__som.attach(
+                        {
+                            "neighborhood": exponential(sigma),
+                            "alpha": tau
+                        }
+                    )
+
                 self.__som.update(x)
         
         lb = self.__operators["relationship_building"](
@@ -87,6 +107,9 @@ class SON_DE:
                 "tg": tg
             }
         )
+
+        if self.__reset_prototypes:
+            self.__som.reset_prototypes()
     
     def attach_de(self, structure):
         self.__de.attach(structure)

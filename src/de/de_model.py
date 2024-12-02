@@ -29,6 +29,7 @@ class DE:
         for i in range(self.__population.shape[0]):
             if not self.__have_fit[i]:
                 self.__fitness[i] = self.__structure["fitness"](self.__population[i])
+                self.__have_fit[i] = True
     
     def get_pop_fitness(self):
         self.__calc_fitness()
@@ -65,6 +66,7 @@ class DE:
             kwargs["index"] = i
             v = self.__structure["mutation"](
                 self.__population,
+                self.__structure["F"],
                 self.best_individual_index(),
                 i,
                 **kwargs
@@ -78,6 +80,6 @@ class DE:
                     self.__population[i] = trial
                     self.__fitness[i] = trial_fit
             else:
-                if trial_fit < self.__fitness[i]:
+                if trial_fit <= self.__fitness[i]:
                     self.__population[i] = trial
                     self.__fitness[i] = trial_fit

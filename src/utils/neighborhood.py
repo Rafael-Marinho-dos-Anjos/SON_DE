@@ -82,6 +82,27 @@ def retangular(sigma: float) -> Any:
     return __retangular
 
 
-if __name__ == "__main__":
-    print(np.round(100*gaussian(1)([3, 3], [2, 0]))/100)
+def exponential(sigma: float) -> Any:
+    def __exponential(neighborhood_shape: tuple, bmu_loc: tuple) -> np.ndarray:
+        def __neighbor(*location):
+            d = np.asarray(location)
+            
+            for i in range(len(bmu_loc)):
+                d[i] = d[i] - bmu_loc[i]
+            
+            d = np.linalg.norm(d, axis=0)
+            
+            return d
+        
+        neighbors = np.fromfunction(__neighbor, neighborhood_shape)
+        is_neighbor = (neighbors <= sigma).astype(np.float32)
+
+        neighbors = np.exp(-neighbors)
+        neighbors = neighbors * is_neighbor
+
+        return neighbors
     
+    return __exponential
+
+if __name__ == "__main__":
+    print(exponential(2)((5, 5), (3, 3)))
