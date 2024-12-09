@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from src.som.som_model import SOM
+# from src.som.som2_model import PenalizedActivationSOM as SOM
 from src.utils.initialization import random
 from src.utils.distances import manhattan
 from src.utils.neighborhood import gaussian
