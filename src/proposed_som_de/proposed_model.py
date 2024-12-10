@@ -8,9 +8,9 @@ from src.utils.exceptions import *
 from src.de.de_model import DE
 from src.som.som2_model import PenalizedActivationSOM as SOM
 from src.proposed_som_de.external_file import ExternalFile
-from src.son_de.operators import *
+from src.proposed_som_de.operators import *
 from src.utils.distances import cosine
-from src.utils.mutation import son_de_rand_1
+from src.utils.mutation import proposed_rand_1
 from src.utils.crossing import binary
 from src.utils.neighborhood import gaussian, exponential
 
@@ -43,7 +43,7 @@ class SON_DE:
 
         self.__de.attach(
             {
-                "mutation": son_de_rand_1,
+                "mutation": proposed_rand_1,
                 "crossing": binary(0.5),
                 "fitness": fitness_func,
                 "F": 0.5
@@ -57,10 +57,8 @@ class SON_DE:
         )
 
         self.__operators = {
-            "relationship_building": relationship_building,
-            "neighborhood_size": neighborhood_size,
-            "locating": locating,
             "grouping": grouping,
+            "group_selection": group_selection,
             "adjust": adjust,
             "sigma0": sigma0,
             "tau0": tau0
@@ -85,39 +83,15 @@ class SON_DE:
                         )
 
                     self.__som.update(x)
-        
-        # TODO -> Operators
-        
-        # lb = self.__operators["relationship_building"](
-        #     self.__de.get_population(),
-        #     self.__som.get_prototypes()
-        # )
 
-        # ranges = self.__operators["neighborhood_size"](
-        #     self.__de.get_pop_fitness(),
-        #     delta,
-        #     limits,
-        #     self.__is_maximization
-        # )
-
-        # nei = self.__operators["locating"](
-        #     lb,
-        #     ranges
-        # )
-
-        # sg, tg = self.__operators["grouping"](
-        #     self.__de.get_pop_fitness(),
-        #     nei,
-        #     self.__is_maximization
-        # )
-
-        sg = [self.__de.get_population()[ind] for ind in sg]
-        tg = [self.__de.get_population()[ind] for ind in tg]
+        clusters = self.__operators["grouping"](self.__de.get_pop_fitness(), self.__de.get_population(), self.__som)
+        cluster, alternative_1, alternative_2 = self.__operators["group_selection"](clusters, self.__is_maximization)
 
         self.__de.new_generation(
             **{
-                "sg": sg,
-                "tg": tg
+                "cluster": cluster,
+                "alternative_1": alternative_1,
+                "alternative_2": alternative_2
             }
         )
 
@@ -125,7 +99,8 @@ class SON_DE:
         new_indviduals = self.__de.get_population()[current_fit != last_fit]
         new_indviduals = np.concatenate((new_indviduals, current_fit[current_fit != last_fit][:, np.newaxis]), axis=1)
 
-        self.__external_file.append(new_indviduals)
+        if len(new_indviduals) > 0:
+            self.__external_file.append(new_indviduals)
     
     def attach_de(self, structure):
         self.__de.attach(structure)
