@@ -36,7 +36,7 @@ class ExternalFile:
         return self.__cache
 
     def __len__(self):
-        if not self.__cache:
+        if self.__cache is None:
             return 0
 
         return len(self.__cache)

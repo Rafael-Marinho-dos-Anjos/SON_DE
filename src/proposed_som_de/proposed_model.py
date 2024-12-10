@@ -15,7 +15,7 @@ from src.utils.crossing import binary
 from src.utils.neighborhood import gaussian, exponential
 
 
-class SON_DE:
+class Model:
     def __init__(
         self,
         dim: int,
@@ -30,16 +30,9 @@ class SON_DE:
         neig_func = None,
     ):
         self.__de = DE(dim, NP, init_method, is_maximization)
-        self.__som = SOM(dim, topology_shape, init_method)
+        self.__som = SOM(dim + 1, topology_shape, init_method)
         self.__is_maximization = is_maximization
         self.__NP=NP
-        self.__external_file = ExternalFile()
-        self.__external_file.append(
-            np.concatenate(
-                (self.__de.get_population(), self.__de.get_pop_fitness()[:, np.newaxis]),
-                axis=1
-            ))
-        self.__ef_ratio = 0
 
         self.__de.attach(
             {
@@ -55,6 +48,14 @@ class SON_DE:
                 "neighborhood": gaussian(sigma=1)
             }
         )
+
+        self.__external_file = ExternalFile()
+        self.__external_file.append(
+            np.concatenate(
+                (self.__de.get_population(), self.__de.get_pop_fitness()[:, np.newaxis]),
+                axis=1
+            ))
+        self.__ef_ratio = 0
 
         self.__operators = {
             "grouping": grouping,

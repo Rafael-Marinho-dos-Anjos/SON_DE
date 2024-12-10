@@ -15,7 +15,8 @@ def grouping(fitness: np.ndarray, pop: np.ndarray, som: SOM) -> dict[float, list
 
     for ind in pop:
         bmu = som.bmu(ind)
-        bmu = ",".join(list(map(str, bmu)))
+        # bmu = ",".join(list(map(str, bmu)))
+        bmu = str(bmu)
 
         if bmu in clusters:
             clusters[bmu] = np.concatenate((clusters[bmu], ind[np.newaxis, :]), axis=0)
