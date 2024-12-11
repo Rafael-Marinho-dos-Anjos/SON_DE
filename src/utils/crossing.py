@@ -21,7 +21,7 @@ def binary(CR: float):
 
 
 def binary_random(CR: tuple[float, float]):
-    def __crossing(a: np.ndarray, b: np.ndarray, **kwargs):
+    def __crossing(a: np.ndarray, b: np.ndarray, CR=CR, **kwargs):
         j = np.random.randint(0, len(a))
         trial = np.zeros(len(a))
 

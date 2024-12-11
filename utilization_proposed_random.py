@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from src.proposed_som_de.proposed_model import Model
 from src.utils.initialization import random as initialization # Seleção do método de inicialização dos pesos do SOM
 from src.benchmark.functions import sphere as fit_function # Seleção da função de fitness
+from src.utils.crossing import binary_random
+from src.utils.mutation import proposed_f_rand_1
 
 
 # Número de dimensões do indivíduo
@@ -35,10 +37,13 @@ model = Model(
 )
 
 
-f_0 = 0.5
+f = (0.2, 0.8)
+cr = (0.1, 0.9)
 model.attach_de(
     {
-        "F": f_0
+        "mutation": proposed_f_rand_1,
+        "F": f,
+        "crossing": binary_random(cr)
     }
 )
 
