@@ -85,6 +85,24 @@ def proposed_rand_1(pop: np.ndarray, f: float, *args, **kwargs):
     return xr1 + f * (xr2 - xr3)
 
 
+def proposed_f_rand_1(pop: np.ndarray, f: tuple[float, float], *args, **kwargs):
+    cluster = kwargs["cluster"]
+    alternative_1 = kwargs["alternative_1"]
+    alternative_2 = kwargs["alternative_2"]
+
+    if len(cluster) < 3:
+        cluster = np.concatenate((cluster, alternative_1), axis=0)
+    if len(cluster) < 3:
+        cluster = np.concatenate((cluster, alternative_2), axis=0)
+
+    xr1, xr2, xr3 = cluster[np.random.choice([i for i in range(len(cluster))], 3, replace=False)]
+
+    min_f = min(f)
+    delta_f = abs(f[0] - f[1])
+
+    return xr1 + (min_f + np.random.rand() * delta_f) * (xr2 - xr3)
+
+
 if __name__ == "__main__":
     pop = np.arange(100)
     pop.resize((25, 4))
