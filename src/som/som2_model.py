@@ -34,3 +34,6 @@ class PenalizedActivationSOM(SOM):
 
         self._prototypes = self._prototypes - diff
         self._acc_matrix[bmu] += 1
+
+    def get_acc_matrix(self):
+        return self._acc_matrix

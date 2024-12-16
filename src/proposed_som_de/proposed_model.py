@@ -8,7 +8,7 @@ from src.utils.exceptions import *
 from src.de.de_model import DE
 from src.som.som2_model import PenalizedActivationSOM as SOM
 from src.proposed_som_de.external_file import ExternalFile
-from src.proposed_som_de.operators import *
+from src.proposed_som_de.operators import grouping, group_selection
 from src.utils.distances import cosine
 from src.utils.mutation import proposed_rand_1
 from src.utils.crossing import binary
@@ -117,6 +117,9 @@ class Model:
 
     def best_individual_index(self):
         return self.__de.best_individual_index()
+    
+    def get_acc_matrix(self):
+        return self.__som.get_acc_matrix()
 
 
 if __name__ == "__main__":
