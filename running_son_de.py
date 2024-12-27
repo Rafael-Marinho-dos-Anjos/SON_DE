@@ -82,10 +82,6 @@ for run in range(30):
             runs[func_name][-1]["epoch"].append(gen + 1)
             best_fit = fit[best]
 
-        # if best_fit < 3.8e-29:
-        #     print(f"fit: {best_fit}\tgen: {gen}")
-        #     break
-
     print(f"\nrun [{run + 1}/30]\tError: {fit[best] - opt_fit}")
 
 with open(PATH, "w") as file:
