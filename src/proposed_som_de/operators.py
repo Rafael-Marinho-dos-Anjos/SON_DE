@@ -15,17 +15,16 @@ def grouping(fitness: np.ndarray, pop: np.ndarray, som: SOM) -> dict[float, list
 
     for ind in pop:
         bmu = som.bmu(ind)
-        # bmu = ",".join(list(map(str, bmu)))
-        bmu = str(bmu)
+        prototypes = som.get_prototypes()
+        bmu = np.unravel_index(bmu, prototypes.shape[:-1])
+        bmu = prototypes[bmu][-1]
 
         if bmu in clusters:
             clusters[bmu] = np.concatenate((clusters[bmu], ind[np.newaxis, :]), axis=0)
         else: 
             clusters[bmu] = ind[np.newaxis, :]
     
-    valuated_clusters = {sum(val[:, -1]) / len(val): val[:, :-1] for val in clusters.values()}
-
-    return valuated_clusters
+    return clusters
 
 
 def group_selection(clusters: dict, is_maximization: bool) -> tuple[np.ndarray]:
