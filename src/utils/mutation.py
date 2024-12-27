@@ -2,6 +2,7 @@
 """
 
 import numpy as np
+from random import random
 
 
 def de_rand_1(pop: np.ndarray, f: float, *args, **kwargs):
@@ -64,8 +65,11 @@ def son_de_rand_1(pop: np.ndarray, f: float, *args, **kwargs):
     
     nei = np.concatenate((sg, tg), axis=0)
     nei = nei[[i for i in range(len(nei)) if (nei[i] != xr2).any() and (nei[i] != xr3).any()]]
-
-    xr1 = nei[np.random.randint(0, len(nei))]
+    
+    if len(nei) == 0:
+        xr1 = xr2 if random() < 0.5 else xr3
+    else:
+        xr1 = nei[np.random.randint(0, len(nei))]
 
     return xr1 + f * (xr2 - xr3)
 

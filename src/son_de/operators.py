@@ -4,15 +4,18 @@ from math import floor
 
 import numpy as np
 
-from src.utils.distances import euclidean_squared
+from src.utils.distances import euclidean_squared, manhattan
 
 
 def relationship_building(de_pop: np.ndarray, som_prototypes: np.ndarray) -> np.ndarray:
     lb = np.zeros(som_prototypes.shape[:-1], dtype=np.int32) - 1
     for i, x in enumerate(de_pop):
-        distances = euclidean_squared(x, som_prototypes).astype(np.float32)
+        distances = manhattan(x, som_prototypes).astype(np.float32)
         distances[np.unravel_index(lb[lb != -1], lb.shape)] = np.inf
-    
+
+        if np.argmin(distances) in lb:
+            pass
+
         lb[np.unravel_index(i, lb.shape)] = np.argmin(distances)
     
     return lb
