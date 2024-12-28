@@ -2,7 +2,7 @@ import json
 import numpy as np
 
 
-with open("src/son_de/runs/runs.json", "r") as file:
+with open("src/proposed_som_de/runs/runs.json", "r") as file:
     runs = json.loads(file.read())
 
 for func in runs.keys():

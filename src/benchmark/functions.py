@@ -19,7 +19,7 @@ def rotated_high_conditioned_elliptic(o: np.ndarray, m: np.ndarray):
         res = 10 ** (6 * i / (d - 1))
         res = res * z ** 2
 
-        return res
+        return res.sum()
     
     return __function
 
