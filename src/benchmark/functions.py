@@ -3,7 +3,7 @@ import numpy as np
 
 def sphere(o: np.ndarray, **kwargs):
     def __function(x: np.ndarray):
-        z = x - o
+        z = (x - o).astype(np.float64)
         res = np.sum(z ** 2, axis=0)
 
         return res
@@ -15,7 +15,7 @@ def rotated_high_conditioned_elliptic(o: np.ndarray, **kwargs):
     m = kwargs["m"]
 
     def __function(x: np.ndarray):
-        z = np.matmul(m, (x - o))
+        z = np.matmul(m, (x - o), dtype=np.longdouble)
         d = len(x)
         i = np.arange(d) # Como a contagem começa de 0, não precisa fazer i-1 depois
         res = 10 ** (6 * i / (d - 1))
@@ -28,7 +28,7 @@ def rotated_high_conditioned_elliptic(o: np.ndarray, **kwargs):
 
 def different_powers(o: np.ndarray, **kwargs):
     def __function(x: np.ndarray):
-        z = np.abs(x - o)
+        z = np.abs(x - o).astype(np.longdouble)
         d = len(x)
         i = np.arange(d) # Como a contagem começa de 0, não precisa fazer i-1 depois
         res = z ** (2 + 4 * i / (d - 1))
@@ -42,19 +42,21 @@ def rotated_bent_cigar(o: np.ndarray, **kwargs):
     m = kwargs["m"]
 
     def __function(x: np.ndarray):
-        z = np.dot(m, x - o)
+        z = np.dot(m, x - o).astype(np.float64)
         res = z[0] ** 2 + 10 ** 6 * np.sum(z[1:] ** 2, axis=0)
         return res
     return __function
 
 
 def rotated_discus(o: np.ndarray, **kwargs):
-    m = kwargs["m"]
+    m = kwargs["m"].astype(np.longdouble)
     
     def __function(x: np.ndarray):
-        z = np.dot(m, x - o)
+        z = np.dot(m, x - o).astype(np.longdouble)
         res = 10 ** 6 * z[0] ** 2 + np.sum(z[1:] ** 2, axis=0)
+
         return res
+    
     return __function
 
 
@@ -64,7 +66,7 @@ def rotated_rosenbrock(o: np.ndarray, **kwargs):
     m = kwargs["m"]
 
     def __function(x: np.ndarray):
-        z = (x - o) / 2.048
+        z = (x - o).astype(np.float64) / 2.048
         z = np.dot(m, z) + 1
         res = np.sum(100 * (z[:-1]**2 - z[1:])**2 + (z[:-1] - 1)**2, axis=0)
         return res
@@ -73,10 +75,12 @@ def rotated_rosenbrock(o: np.ndarray, **kwargs):
 
 def rotated_schaffer_f7(o: np.ndarray, **kwargs):
     m = kwargs["m"]
-    alpha = kwargs["alpha"]
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 10 ** (i / (2 * (len(o) - 1)))
 
     def __function(x: np.ndarray):
-        y = np.dot(m, np.diag(alpha) @ (x - o))
+        y = np.dot(m, np.matmul(lambda_, (x - o))).astype(np.longdouble)
         z = np.sqrt(y[:-1]**2 + y[1:]**2)
         res = np.sum(np.sqrt(z) * (1 + 0.001 * np.sin(50 * z)**2), axis=0)
         return res
@@ -85,10 +89,12 @@ def rotated_schaffer_f7(o: np.ndarray, **kwargs):
 
 def rotated_ackley(o: np.ndarray, **kwargs):
     m = kwargs["m"]
-    alpha = kwargs["alpha"]
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 10 ** (i / (2 * (len(o) - 1)))
 
     def __function(x: np.ndarray):
-        z = np.dot(m, np.diag(alpha) @ (x - o))
+        z = np.dot(m, np.matmul(lambda_, (x - o))).astype(np.longdouble)
         D = z.shape[0]
         term1 = -20 * np.exp(-0.2 * np.sqrt(np.sum(z**2, axis=0) / D))
         term2 = -np.exp(np.sum(np.cos(2 * np.pi * z), axis=0) / D)
@@ -100,28 +106,35 @@ def rotated_ackley(o: np.ndarray, **kwargs):
 def rotated_weierstrass(o: np.ndarray, **kwargs):
     m = kwargs["m"]
     a, b, k_max = 0.5, 3, 20
+    k = np.arange(1, 21)
 
     def __function(x: np.ndarray):
         z = np.dot(m, (x - o) / 100)
         D = z.shape[0]
-        term1 = np.sum([a**k * np.cos(2 * np.pi * b**k * (z + 0.5)) for k in range(k_max + 1)], axis=0)
-        term2 = D * np.sum([a**k * np.cos(2 * np.pi * b**k * 0.5) for k in range(k_max + 1)])
+        term1 = np.sum((a ** k)[:, np.newaxis] * np.cos(2 * np.pi * (b ** k)[:, np.newaxis] * (z + 0.5)))
+        term2 = D * np.sum((a ** k)[:, np.newaxis] * np.cos(2 * np.pi * (b ** k)[:, np.newaxis] * 0.5))
         res = term1 - term2
+
         return res
+    
     return __function
 
 
 def rotated_griewank(o: np.ndarray, **kwargs):
     m = kwargs["m"]
-    alpha = kwargs["alpha"]
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 100 ** (i / (2 * (len(o) - 1)))
 
     def __function(x: np.ndarray):
-        z = np.dot(m, np.diag(alpha) @ (x - o))
+        z = np.dot(m, np.matmul(lambda_, (x - o))).astype(np.float64)
         D = z.shape[0]
         term1 = np.sum(z**2, axis=0) / 4000
         term2 = np.prod(np.cos(z / np.sqrt(np.arange(1, D + 1))), axis=0)
         res = term1 - term2 + 1
+
         return res
+    
     return __function
 
 
@@ -185,23 +198,52 @@ def schwefel(o: np.ndarray, **kwargs):
 
 def rotated_schwefel(o: np.ndarray, **kwargs):
     m = kwargs["m"]
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 10 ** (i / (2 * (len(o) - 1)))
+    
+    def __g(x):
+        x_ = np.mod(np.abs(x), 500) - 500
+        a = x_ * np.sin(np.sqrt(np.abs(x_))) - np.square(x + 500) / (10000 * len(o))
+        b = -x_ * np.sin(np.sqrt(np.abs(x_))) - np.square(x - 500) / (10000 * len(o))
+        c = x * np.sin(np.sqrt(np.abs(x)))
+
+        a = a * (x < -500)
+        b = b * (x > 500)
+        c = c * (np.abs(x) <= 500)
+
+        return a + b + c
     
     def __function(x: np.ndarray):
-        z = np.dot(m, x - o)
-        res = 418.9829 * z.shape[0] - np.sum(z * np.sin(np.sqrt(np.abs(z))), axis=0)
+        z = 10 * (x - o)
+        z = np.matmul(lambda_, np.matmul(m, x)) + 420.968746227503
+        res = 418.9829 * z.shape[0] - np.sum(__g(z), axis=0)
+
         return res
+
     return __function
 
 
 def rotated_katsuura(o: np.ndarray, **kwargs):
     m = kwargs["m"]
+    m2 = kwargs["m2"]
+    j = np.arange(1, 33)
+    i_ = np.arange(1, len(o) + 1)
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 100 ** (i / (2 * (len(o) - 1)))
     
     def __function(x: np.ndarray):
-        z = np.dot(m, (x - o) / 100)
+        z = np.matmul(m, (x - o) / 20)
+        z = np.matmul(lambda_, z)
+        z = np.matmul(m2, z)
         D = z.shape[0]
-        term = np.prod([np.sum(np.abs(2**j * z - np.round(2**j * z)) / (2**j)) for j in range(1, 32)], axis=0)
-        res = (1 + term)**(10 / D) - 1
+        term = i_ * np.sum(np.abs((2 ** j)[:, np.newaxis] * z - np.round((2 ** j)[:, np.newaxis] * z)) / (2 ** j)[:, np.newaxis], axis=0)
+        term = (1 + term) ** (10 / (D ** 1.2))
+        res = (10 / (D ** 2)) * np.prod(term) - 10 / (D ** 2)
+
         return res
+    
     return __function
 
 
@@ -264,6 +306,7 @@ def calculate_weights(z: np.ndarray, o: np.ndarray, sigma: float):
 
 def composition_function_any(sigmas: list, lambdas: list, biases: list, functions: list):
     functions = functions
+    
     def __composition_function(o: np.ndarray, m: list):
         functions = [func(o=o, m=m[i]) for i, func in enumerate(functions)]
 
@@ -386,4 +429,9 @@ def composition_function_8(o: np.ndarray, M: list, sigmas: list, lambdas: list, 
     return __function
 
 if __name__ == "__main__":
-    print(np.mod([1, 2, 3], 3))
+    k = np.arange(1, 21)
+    a = 1
+    b = 1
+    c = np.arange(3)
+
+    print(np.sum((a ** k)[:, np.newaxis] * np.sin((b ** k)[:, np.newaxis] * c)))

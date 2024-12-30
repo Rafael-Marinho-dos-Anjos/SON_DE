@@ -2,11 +2,10 @@ import os
 import json
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from src.proposed_som_de.proposed_model import Model
 from src.utils.initialization import random as initialization # Seleção do método de inicialização dos pesos do SOM
-from src.benchmark.functions import rotated_rosenbrock as fit_function # Seleção da função de fitness
+from src.benchmark.functions import rotated_katsuura as fit_function # Seleção da função de fitness
 from src.utils.crossing import binary_random
 from src.utils.mutation import proposed_f_rand_1
 
@@ -19,17 +18,28 @@ if os.path.exists(PATH):
 else:
     runs = dict()
 
-func_name = "F6"
+func_name = "F16"
 runs[func_name] = list()
 
 # Número de dimensões do indivíduo
 dim=30
 
-m = np.identity(dim)
+def randon_rot_matrix(d: int) -> np.ndarray:
+    rnd_mat = np.random.randn(d, d)
+    m, _ = np.linalg.qr(rnd_mat)
+
+    if np.linalg.det(m) < 0:
+        m[:, 0] = -m[:, 0]
+
+    return m
+
+# m = np.identity(dim)
+m = randon_rot_matrix(dim)
+m2 = randon_rot_matrix(dim)
 
 # Função de aptidão
 global_optimum = np.random.randint(-80, 80, size=30)
-fitness = fit_function(global_optimum, m)
+fitness = fit_function(global_optimum, m=m, m2=m2)
 opt_fit = fitness(global_optimum)
 print(f"Ótimo global: {global_optimum}")
 print(f"Aptidão ótima: {opt_fit}")
@@ -83,11 +93,11 @@ for run in range(30):
         fit = model.get_pop_fitness()
         
         if best_fit is None or fit[best] < best_fit:
-            runs[func_name][-1]["fitness"].append(fit[best] - opt_fit)
+            runs[func_name][-1]["fitness"].append(fit[best])
             runs[func_name][-1]["epoch"].append(gen + 1)
             best_fit = fit[best]
 
-    print(f"\nrun [{run + 1}/30]\tError: {fit[best] - opt_fit}")
+    print(f"\nrun [{run + 1}/30]\tError: {fit[best]}")
 
 with open(PATH, "w") as file:
     file.write(json.dumps(runs))
