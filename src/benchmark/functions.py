@@ -1,6 +1,32 @@
 import numpy as np
 
 
+def t_asy(x: np.ndarray, beta):
+    D = x.shape[-1]
+    i = np.arange(1, D + 1)
+    x_ = np.pow(x, (1 + np.sqrt(np.abs(x)) * beta * (i - 1) / (D - 1)))
+
+    x_[x <= 0] = x[x <= 0]
+
+    return x_
+
+
+def t_osz(x: np.ndarray):
+    D = x.shape[-1]
+    x_ = np.zeros(D)
+    x_[x != 0] = np.log(np.abs(x))[x != 0]
+
+    c_1 = np.ones(D) * 5.5
+    c_1[x > 0] = c_1[x > 0] + 4.5
+
+    c_2 = np.ones(D) * 3.1
+    c_2[x > 0] = c_2[x > 0] + 4.8
+
+    res = np.sign(x) * np.exp(x_ + 0.049 * (np.sin(c_1 * x_) + np.sin(c_2 * x_)))
+
+    return res
+
+
 def sphere(o: np.ndarray, **kwargs):
     def __function(x: np.ndarray):
         z = (x - o).astype(np.float64)
@@ -13,10 +39,11 @@ def sphere(o: np.ndarray, **kwargs):
 
 def rotated_high_conditioned_elliptic(o: np.ndarray, **kwargs):
     m = kwargs["m"]
+    d = o.shape[-1]
 
     def __function(x: np.ndarray):
-        z = np.matmul(m, (x - o), dtype=np.longdouble)
-        d = len(x)
+        z = np.matmul(m, (x - o)).astype(np.longdouble)
+        z = t_osz(z)
         i = np.arange(d) # Como a contagem começa de 0, não precisa fazer i-1 depois
         res = 10 ** (6 * i / (d - 1))
         res = res * z ** 2
@@ -40,9 +67,11 @@ def different_powers(o: np.ndarray, **kwargs):
 
 def rotated_bent_cigar(o: np.ndarray, **kwargs):
     m = kwargs["m"]
-
+    m2 = kwargs["m2"]
+    
     def __function(x: np.ndarray):
-        z = np.dot(m, x - o).astype(np.float64)
+        z = np.matmul(m, x - o)
+        z = np.matmul(m2, t_asy(z, 0.5))
         res = z[0] ** 2 + 10 ** 6 * np.sum(z[1:] ** 2, axis=0)
 
         return res
@@ -55,6 +84,7 @@ def rotated_discus(o: np.ndarray, **kwargs):
     
     def __function(x: np.ndarray):
         z = np.dot(m, x - o).astype(np.longdouble)
+        z = t_osz(z)
         res = 10 ** 6 * z[0] ** 2 + np.sum(z[1:] ** 2, axis=0)
 
         return res
@@ -147,8 +177,15 @@ def rotated_griewank(o: np.ndarray, **kwargs):
 
 
 def rastrigin(o: np.ndarray, **kwargs):
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 10 ** (i / (2 * (len(o) - 1)))
+
     def __function(x: np.ndarray):
-        z = x - o
+        z = 5.12 * (x - o) / 100
+        z = t_asy(t_osz(z), 0.2)
+        z = np.matmul(lambda_, z)
+
         res = np.sum(z**2 - 10 * np.cos(2 * np.pi * z) + 10, axis=0)
 
         return res
@@ -158,10 +195,17 @@ def rastrigin(o: np.ndarray, **kwargs):
 
 def rotated_rastrigin(o: np.ndarray, **kwargs):
     m = kwargs["m"]
-    alpha = kwargs["alpha"]
+    m2 = kwargs["m2"]
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 10 ** (i / (2 * (len(o) - 1)))
 
     def __function(x: np.ndarray):
-        z = np.dot(m, np.diag(alpha) @ (x - o))
+        z = np.matmul(m, 5.12 * (x - o) / 100)
+        z = np.matmul(m2, t_asy(t_osz(z), 0.2))
+        z = np.matmul(lambda_, z)
+        z = np.matmul(m, z)
+        
         res = np.sum(z**2 - 10 * np.cos(2 * np.pi * z) + 10, axis=0)
 
         return res
@@ -171,11 +215,18 @@ def rotated_rastrigin(o: np.ndarray, **kwargs):
 
 def non_continuous_rotated_rastrigin(o: np.ndarray, **kwargs):
     m = kwargs["m"]
-    alpha = kwargs["alpha"]
+    m2 = kwargs["m2"]
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 10 ** (i / (2 * (len(o) - 1)))
 
     def __function(x: np.ndarray):
-        y = np.where(np.abs(x - o) > 0.5, np.round(x - o), x - o)
-        z = np.dot(m, np.diag(alpha) @ y)
+        z = np.matmul(m, 5.12 * (x - o) / 100)
+        z[z > 0.5] = (np.round(2 * z) / 2)[z > 0.5]
+        z = np.matmul(m2, t_asy(t_osz(z), 0.2))
+        z = np.matmul(lambda_, z)
+        z = np.matmul(m, z)
+        
         res = np.sum(z**2 - 10 * np.cos(2 * np.pi * z) + 10, axis=0)
 
         return res
@@ -263,43 +314,75 @@ def rotated_katsuura(o: np.ndarray, **kwargs):
 
 
 
-def lunacek_bi_rastrigin(o: np.ndarray, mu0: float = 2.5, d: float = 1, **kwargs):
+def lunacek_bi_rastrigin(o: np.ndarray, **kwargs):
+    mu_0 = 2.5
+    D = o.shape[-1]
+    d = 1
+    s = 1 - 1 / (2 * np.sqrt(D + 20) - 8.2)
+    mu_1 = -np.sqrt((mu_0 ** 2 - d) / s)
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 100 ** (i / (2 * (len(o) - 1)))
+
     def __function(x: np.ndarray):
-        z = x - o
-        D = z.shape[0]
-        mu1 = -np.sqrt(mu0**2 - d)
-        term1 = np.sum((z - mu0)**2, axis=0)
-        term2 = d * D + np.sum((z - mu1)**2, axis=0)
-        term3 = 10 * np.sum(1 - np.cos(2 * np.pi * (z - mu0)), axis=0)
-        res = np.minimum(term1, term2) + term3
+        x = x.astype(np.longdouble)
+        y = (x - o) / 10
+        x_ = 2 * np.sign(x) * y + mu_0
+        z = np.matmul(lambda_, x_ - mu_0)
+
+        res = np.min(
+            [
+                np.sum((x_ - mu_0) ** 2),
+                d * D + s * np.sum((x_ - mu_1) ** 2)
+            ]
+        ) + 10 * (D - np.sum(np.cos(2 * np.pi * z)))
 
         return res
 
     return __function
 
 
-def rotated_lunacek_bi_rastrigin(o: np.ndarray, mu0: float = 2.5, d: float = 1, **kwargs):
+def rotated_lunacek_bi_rastrigin(o: np.ndarray, **kwargs):
+    mu_0 = 2.5
+    D = o.shape[-1]
+    d = 1
+    s = 1 - 1 / (2 * np.sqrt(D + 20) - 8.2)
+    mu_1 = -np.sqrt((mu_0 ** 2 - d) / s)
     m = kwargs["m"]
-    
+    m2 = kwargs["m2"]
+    lambda_ = np.identity(len(o))
+    for i in range(len(o)):
+        lambda_[i, i] = 100 ** (i / (2 * (len(o) - 1)))
+
     def __function(x: np.ndarray):
-        z = np.dot(m, x - o)
-        D = z.shape[0]
-        mu1 = -np.sqrt(mu0**2 - d)
-        term1 = np.sum((z - mu0)**2, axis=0)
-        term2 = d * D + np.sum((z - mu1)**2, axis=0)
-        term3 = 10 * np.sum(1 - np.cos(2 * np.pi * (z - mu0)), axis=0)
-        res = np.minimum(term1, term2) + term3
+        x = x.astype(np.longdouble)
+        y = (x - o) / 10
+        x_ = 2 * np.sign(x) * y + mu_0
+        z = np.matmul(m2, np.matmul(lambda_, np.matmul(m, x_ - mu_0)))
+
+        res = np.min(
+            [
+                np.sum((x_ - mu_0) ** 2),
+                d * D + s * np.sum((x_ - mu_1) ** 2)
+            ]
+        ) + 10 * (D - np.sum(np.cos(2 * np.pi * z)))
 
         return res
 
     return __function
 
 
-def expanded_griewank_rosenbrock(o: np.ndarray, **kwargs):
+def rotated_expanded_griewank_rosenbrock(o: np.ndarray, **kwargs):
+    m = kwargs["m"]
+
+    g_1 = lambda x: np.square(x) / 4000 - np.cos(x) + 1
+    g_2 = lambda x: np.sum((x[:, :-1] ** 2 - x[:, 1:]) ** 2 + (x[:, :-1] - 1) ** 2, axis=1)
+
     def __function(x: np.ndarray):
-        z = x - o + 1
-        term1 = 100 * (z[:-1]**2 - z[1:])**2 + (z[:-1] - 1)**2
-        res = np.sum(term1 / 4000 - np.prod(np.cos(term1 / np.sqrt(np.arange(1, term1.size + 1)))) + 1)
+        z = np.matmul(m, (x - o) / 20 + 1)
+        z_ = np.stack((z, np.roll(z, -1)), axis=1)
+        
+        res = np.sum(g_1(g_2(z_)))
 
         return res
 
@@ -308,11 +391,16 @@ def expanded_griewank_rosenbrock(o: np.ndarray, **kwargs):
 
 def rotated_expanded_schaffer_f6(o: np.ndarray, **kwargs):
     m = kwargs["m"]
+    m2 = kwargs["m2"]
+    f_6 = lambda x, y: 0.5 + (np.sin(np.sqrt(x ** 2 + y ** 2)) ** 2 - 0.5) \
+        / np.square(1 + 0.001 * (x ** 2 + y ** 2))
     
     def __function(x: np.ndarray):
-        z = np.dot(m, x - o)
-        term = 0.5 + (np.sin(np.sqrt(z[:-1]**2 + z[1:]**2))**2 - 0.5) / (1 + 0.001 * (z[:-1]**2 + z[1:]**2))
-        res = np.sum(term, axis=0)
+        z = np.matmul(m, x - o)
+        z = np.matmul(m2, t_asy(z, 0.5))
+        z_ = np.roll(z, -1)
+        
+        res = np.sum(f_6(z, z_))
 
         return res
 
@@ -443,7 +531,7 @@ composition_function_8 = composition_function_any(
     lambdas=[2.5, 2.5e-3, 2.5, 5e-4,0.1],
     biases=[0, 100, 200, 300, 400],
     functions=[
-        # func ainda nao implementada,
+        rotated_griewank,
         rotated_schaffer_f7,
         rotated_schwefel,
         rotated_expanded_schaffer_f6,

@@ -5,7 +5,7 @@ import numpy as np
 
 from src.proposed_som_de.proposed_model import Model
 from src.utils.initialization import random as initialization # Seleção do método de inicialização dos pesos do SOM
-from src.benchmark.functions import composition_function_3 as fit_function # Seleção da função de fitness
+from src.benchmark.functions import composition_function_8 as fit_function # Seleção da função de fitness
 from src.utils.crossing import binary_random
 from src.utils.mutation import proposed_f_rand_1
 
@@ -18,7 +18,7 @@ if os.path.exists(PATH):
 else:
     runs = dict()
 
-func_name = "F23"
+func_name = "F28"
 runs[func_name] = list()
 
 # Número de dimensões do indivíduo

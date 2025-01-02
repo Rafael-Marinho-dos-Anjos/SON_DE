@@ -14,7 +14,7 @@ for i in range(1, 29):
 
     best_fits = list()
     for run in runs[func]:
-        best_fits.append(run["fitness"][-1] * gambiarra)
-    
+        best_fits.append(run["fitness"][-1])
+
     best_fits = np.array(best_fits, dtype=np.float64)
-    print(f"{func} -> mean: {best_fits.mean()/gambiarra}    \tstd: {best_fits.std()/gambiarra}")
+    print(f"{func} -> mean: {best_fits.mean()}    \tstd: {best_fits.std()}")
