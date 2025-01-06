@@ -48,7 +48,7 @@ def rotated_high_conditioned_elliptic(o: np.ndarray, **kwargs):
         res = 10 ** (6 * i / (d - 1))
         res = res * z ** 2
 
-        return res.sum()
+        return res.sum() - 1300
     
     return __function
 
@@ -74,7 +74,7 @@ def rotated_bent_cigar(o: np.ndarray, **kwargs):
         z = np.matmul(m2, t_asy(z, 0.5))
         res = z[0] ** 2 + 10 ** 6 * np.sum(z[1:] ** 2, axis=0)
 
-        return res
+        return res - 1200
 
     return __function
 
@@ -87,7 +87,7 @@ def rotated_discus(o: np.ndarray, **kwargs):
         z = t_osz(z)
         res = 10 ** 6 * z[0] ** 2 + np.sum(z[1:] ** 2, axis=0)
 
-        return res
+        return res - 1100
     
     return __function
 
@@ -541,9 +541,10 @@ composition_function_8 = composition_function_any(
 
 
 if __name__ == "__main__":
-    k = np.arange(1, 21)
-    a = 1
-    b = 1
-    c = np.arange(3)
+   import matplotlib.pyplot as plt
 
-    print(np.sum((a ** k)[:, np.newaxis] * np.sin((b ** k)[:, np.newaxis] * c)))
+   x = (np.arange(16000) - 8000) / 100
+   y = t_osz(x)
+
+   plt.plot(y, x)
+   plt.show()

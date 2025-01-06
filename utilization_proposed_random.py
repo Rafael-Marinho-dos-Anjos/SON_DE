@@ -5,7 +5,7 @@ import numpy as np
 
 from src.proposed_som_de.proposed_model import Model
 from src.utils.initialization import random as initialization # Seleção do método de inicialização dos pesos do SOM
-from src.benchmark.functions import composition_function_8 as fit_function # Seleção da função de fitness
+from src.benchmark.functions import rotated_high_conditioned_elliptic as fit_function # Seleção da função de fitness
 from src.utils.crossing import binary_random
 from src.utils.mutation import proposed_f_rand_1
 
@@ -18,7 +18,7 @@ if os.path.exists(PATH):
 else:
     runs = dict()
 
-func_name = "F28"
+func_name = "F2"
 runs[func_name] = list()
 
 # Número de dimensões do indivíduo
@@ -32,8 +32,8 @@ def randon_rot_matrix(d: int) -> np.ndarray:
         m[:, 0] = -m[:, 0]
 
     return m
+    # return np.identity(d)
 
-# m = np.identity(dim)
 m = randon_rot_matrix(dim)
 m2 = randon_rot_matrix(dim)
 
@@ -93,11 +93,11 @@ for run in range(30):
         fit = model.get_pop_fitness()
         
         if best_fit is None or fit[best] < best_fit:
-            runs[func_name][-1]["fitness"].append(fit[best])
+            runs[func_name][-1]["fitness"].append(fit[best] - opt_fit)
             runs[func_name][-1]["epoch"].append(gen + 1)
             best_fit = fit[best]
 
-    print(f"\nrun [{run + 1}/30]\tError: {fit[best]}")
+    print(f"\nrun [{run + 1}/30]\tError: {fit[best] - opt_fit}")
 
 with open(PATH, "w") as file:
     file.write(json.dumps(runs))

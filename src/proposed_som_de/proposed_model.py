@@ -74,8 +74,8 @@ class Model:
             for epoch in range(som_epochs):
                 for i, x in enumerate(self.__external_file.get_not_acessed()):
                     if self.__operators["adjust"]:
-                        sigma = self.__operators["sigma0"] * self.__operators["adjust"](i=i, t=epoch, T=som_epochs, NP=self.__NP)
-                        tau = self.__operators["tau0"] * self.__operators["adjust"](i=i, t=epoch, T=som_epochs, NP=self.__NP)
+                        sigma = self.__operators["sigma0"] # * self.__operators["adjust"](i=i, t=epoch, T=som_epochs, NP=self.__NP)
+                        tau = self.__operators["tau0"] # * self.__operators["adjust"](i=i, t=epoch, T=som_epochs, NP=self.__NP)
                         self.__som.attach(
                             {
                                 "neighborhood": exponential(sigma),

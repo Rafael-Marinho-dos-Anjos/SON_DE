@@ -32,7 +32,11 @@ def group_selection(clusters: dict, is_maximization: bool) -> tuple[np.ndarray]:
         max_ = max(clusters.keys())
         clusters = {max_ - key: clusters[key] for key in clusters.keys()}
 
-    clusters = {np.exp(key / 5): clusters[key] for key in clusters.keys()}
+    # roleta
+    # clusters = {np.exp(key / 5): clusters[key] for key in clusters.keys()}
+
+    # rank
+    clusters = {i + 1: clusters[key] for i, key in enumerate(sorted(clusters.keys()))}
 
     a = random() * sum(clusters.keys())
     acc = 0
